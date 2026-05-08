@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { RefreshCw, TrendingUp, Calendar, PoundSterling } from 'lucide-react'
 import api from '../api'
 import { useCurrencyFormatter } from '../hooks/useSettings'
@@ -38,6 +39,7 @@ function StatCard({ label, value, sub, icon: Icon, accent }) {
 export default function Dashboard() {
   const ty = currentTaxYear()
   const { fmt, currency } = useCurrencyFormatter()
+  const navigate = useNavigate()
 
   const { data: prices, isLoading: pricesLoading } = useQuery({
     queryKey: ['prices'],
@@ -65,8 +67,11 @@ export default function Dashboard() {
       : (line.rsu_value_gbp || 0)
   const totalUnvested = futureVests.reduce((s, l) => s + rsuValue(l), 0)
 
+  const hasSalary = schedule?.tax_years?.some((t) => t.lines.some((l) => l.type === 'salary'))
+
   const ytdLines = tyBlock?.lines.filter((l) => l.line_date <= today) || []
-  const ytdSalary = ytdLines.filter((l) => l.type === 'salary').reduce((s, l) => s + (l.cash_gbp || 0), 0)
+  const ytdSalaryGross = ytdLines.filter((l) => l.type === 'salary').reduce((s, l) => s + (l.cash_gbp || 0), 0)
+  const ytdPension = ytdLines.filter((l) => l.type === 'salary').reduce((s, l) => s + (l.pension_gbp || 0), 0)
   const ytdBonus = ytdLines.filter((l) => l.type === 'bonus').reduce((s, l) => s + (l.cash_gbp || 0), 0)
   const ytdRsu = ytdLines.filter((l) => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0)
 
@@ -89,6 +94,15 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-semibold text-gray-100">Dashboard</h1>
+
+      {!schedLoading && !hasSalary && (
+        <div className="card border border-brand/30 bg-brand/5 flex items-center justify-between">
+          <span className="text-sm text-gray-300">Get started by adding your salary information.</span>
+          <button onClick={() => navigate('/salary')} className="btn-primary text-sm">
+            Add salary
+          </button>
+        </div>
+      )}
 
       {/* Price cards */}
       <div className={`grid gap-4 ${currency === 'USD' ? 'grid-cols-2' : 'grid-cols-3'}`}>
@@ -126,9 +140,15 @@ export default function Dashboard() {
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-400">Salary received</span>
-              <span className="font-mono text-gray-100">{fmt(ytdSalary)}</span>
+              <span className="text-gray-400">Salary (gross)</span>
+              <span className="font-mono text-gray-100">{fmt(ytdSalaryGross)}</span>
             </div>
+            {ytdPension > 0 && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">Pension sacrifice</span>
+                <span className="font-mono text-red-400">−{fmt(ytdPension)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-gray-400">Bonus received</span>
               <span className="font-mono text-gray-100">{fmt(ytdBonus)}</span>
@@ -137,11 +157,31 @@ export default function Dashboard() {
               <span className="text-gray-400">RSU vested</span>
               <span className="font-mono text-gray-100">{fmt(ytdRsu)}</span>
             </div>
-            <div className="border-t border-surface-600 pt-2 flex justify-between font-semibold">
-              <span className="text-gray-300">Projected full year</span>
-              <span className="font-mono text-brand">
-                {fmt((tyBlock?.subtotals.total_cash || 0) + (tyBlock?.lines || []).filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0))}
-              </span>
+            <div className="border-t border-surface-600 pt-2 space-y-1">
+              {(() => {
+                const tyPension = tyBlock?.subtotals.pension || 0
+                const tyRsu = (tyBlock?.lines || []).filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0)
+                const grossTotal = (tyBlock?.subtotals.total_cash || 0) + tyRsu
+                const netTotal = grossTotal - tyPension
+                return <>
+                  <div className="flex justify-between font-semibold">
+                    <span className="text-gray-300">Projected full year (gross)</span>
+                    <span className="font-mono text-gray-300">{fmt(grossTotal)}</span>
+                  </div>
+                  {tyPension > 0 && (
+                    <div className="flex justify-between font-semibold">
+                      <span className="text-gray-300">After pension</span>
+                      <span className="font-mono text-brand">{fmt(netTotal)}</span>
+                    </div>
+                  )}
+                  {tyPension === 0 && (
+                    <div className="flex justify-between font-semibold">
+                      <span className="text-gray-300">Projected full year</span>
+                      <span className="font-mono text-brand">{fmt(grossTotal)}</span>
+                    </div>
+                  )}
+                </>
+              })()}
             </div>
           </div>
         </div>
@@ -184,10 +224,11 @@ export default function Dashboard() {
           <thead>
             <tr className="border-b border-surface-600 text-xs uppercase tracking-wide text-gray-500">
               <th className="pb-2 text-left">Tax Year</th>
-              <th className="pb-2 text-right">Salary</th>
+              <th className="pb-2 text-right">Salary (gross)</th>
+              <th className="pb-2 text-right">Pension</th>
               <th className="pb-2 text-right">Bonus</th>
               <th className="pb-2 text-right">RSU</th>
-              <th className="pb-2 text-right">Total</th>
+              <th className="pb-2 text-right">Total (net)</th>
             </tr>
           </thead>
           <tbody>
@@ -200,12 +241,18 @@ export default function Dashboard() {
                   )}
                 </td>
                 <td className="py-2 text-right font-mono text-gray-300">{fmt(t.subtotals.base_salary)}</td>
+                <td className="py-2 text-right font-mono text-red-400">
+                  {t.subtotals.pension > 0 ? `−${fmt(t.subtotals.pension)}` : '—'}
+                </td>
                 <td className="py-2 text-right font-mono text-gray-300">{fmt(t.subtotals.bonus)}</td>
                 <td className="py-2 text-right font-mono text-yellow-400">
                   {fmt(t.lines.filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0))}
                 </td>
                 <td className="py-2 text-right font-mono font-semibold text-brand">
-                  {fmt(t.subtotals.total_cash + t.lines.filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0))}
+                  {fmt(
+                    (t.subtotals.total_cash - t.subtotals.pension) +
+                    t.lines.filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0)
+                  )}
                 </td>
               </tr>
             ))}

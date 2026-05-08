@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar'
 import Bonuses from './pages/Bonuses'
 import Dashboard from './pages/Dashboard'
 import PaySchedule from './pages/PaySchedule'
+import Pension from './pages/Pension'
 import RSUAwards from './pages/RSUAwards'
 import Salary from './pages/Salary'
 import Settings from './pages/Settings'
@@ -58,6 +59,7 @@ function Layout() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="salary" element={<Salary />} />
           <Route path="bonuses" element={<Bonuses />} />
+          <Route path="pension" element={<Pension />} />
           <Route path="rsu" element={<RSUAwards />} />
           <Route path="schedule" element={<PaySchedule />} />
           <Route path="settings" element={<Settings />} />

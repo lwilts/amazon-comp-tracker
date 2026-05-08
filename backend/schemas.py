@@ -134,6 +134,36 @@ class RSUAwardResponse(RSUAwardBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+# ─── Pension ──────────────────────────────────────────────────────────────────
+
+class PensionConfigBase(BaseModel):
+    amount_type: str
+    amount: float
+    effective_from: date
+    effective_to: Optional[date] = None
+    notes: Optional[str] = None
+
+    @field_validator("amount_type")
+    @classmethod
+    def validate_amount_type(cls, v: str) -> str:
+        if v not in ("percentage", "fixed"):
+            raise ValueError("amount_type must be 'percentage' or 'fixed'")
+        return v
+
+
+class PensionConfigCreate(PensionConfigBase):
+    pass
+
+
+class PensionConfigUpdate(PensionConfigBase):
+    pass
+
+
+class PensionConfigResponse(PensionConfigBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
 # ─── Pay Schedule ─────────────────────────────────────────────────────────────
 
 class PayLineItem(BaseModel):
@@ -142,6 +172,7 @@ class PayLineItem(BaseModel):
     type: str       # "salary" | "bonus" | "rsu"
     description: str
     cash_gbp: Optional[float] = None
+    pension_gbp: Optional[float] = None
     rsu_shares: Optional[int] = None
     rsu_value_gbp: Optional[float] = None
     is_estimated: bool
@@ -151,6 +182,7 @@ class PayLineItem(BaseModel):
 
 class TaxYearSubtotals(BaseModel):
     base_salary: float
+    pension: float
     bonus: float
     rsu: float
     total_cash: float

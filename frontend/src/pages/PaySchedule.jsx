@@ -115,36 +115,45 @@ export default function PaySchedule() {
                     <th className="px-3 py-2 text-left">Date</th>
                     <th className="px-3 py-2 text-left">Type</th>
                     <th className="px-3 py-2 text-left">Description</th>
-                    <th className="px-3 py-2 text-right">Cash (£)</th>
+                    <th className="px-3 py-2 text-right">Gross (£)</th>
+                    <th className="px-3 py-2 text-right">Pension (£)</th>
                     <th className="px-3 py-2 text-right">RSU Shares</th>
                     <th className="px-3 py-2 text-right">RSU Value (£)</th>
-                    <th className="px-3 py-2 text-right">Total (£)</th>
+                    <th className="px-3 py-2 text-right">Net (£)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {lines.map((line, i) => (
-                    <tr key={i} className={`border-b border-surface-700 table-row-hover ${line.type === 'rsu' ? 'bg-brand/5' : ''}`}>
-                      <td className="px-3 py-2 font-mono text-gray-400">{line.line_date}</td>
-                      <td className="px-3 py-2"><TypeBadge type={line.type} /></td>
-                      <td className="px-3 py-2 text-gray-300">{line.description}</td>
-                      <td className="px-3 py-2 font-mono text-right text-gray-300">
-                        {line.cash_gbp ? formatGBP(line.cash_gbp) : ''}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-right text-gray-400">
-                        {line.rsu_shares || ''}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-right">
-                        {line.type === 'rsu' && (
-                          <span className={line.is_estimated ? 'italic text-yellow-400' : 'text-green-400'}>
-                            {line.is_estimated ? '~' : ''}{formatGBP(line.rsu_value_gbp)}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-right font-semibold text-gray-200">
-                        {formatGBP(line.cash_gbp ?? line.rsu_value_gbp)}
-                      </td>
-                    </tr>
-                  ))}
+                  {lines.map((line, i) => {
+                    const net = line.type === 'salary'
+                      ? (line.cash_gbp || 0) - (line.pension_gbp || 0)
+                      : (line.cash_gbp ?? line.rsu_value_gbp)
+                    return (
+                      <tr key={i} className={`border-b border-surface-700 table-row-hover ${line.type === 'rsu' ? 'bg-brand/5' : ''}`}>
+                        <td className="px-3 py-2 font-mono text-gray-400">{line.line_date}</td>
+                        <td className="px-3 py-2"><TypeBadge type={line.type} /></td>
+                        <td className="px-3 py-2 text-gray-300">{line.description}</td>
+                        <td className="px-3 py-2 font-mono text-right text-gray-300">
+                          {line.cash_gbp ? formatGBP(line.cash_gbp) : ''}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-right text-red-400">
+                          {line.pension_gbp ? `−${formatGBP(line.pension_gbp)}` : ''}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-right text-gray-400">
+                          {line.rsu_shares || ''}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-right">
+                          {line.type === 'rsu' && (
+                            <span className={line.is_estimated ? 'italic text-yellow-400' : 'text-green-400'}>
+                              {line.is_estimated ? '~' : ''}{formatGBP(line.rsu_value_gbp)}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-right font-semibold text-gray-200">
+                          {formatGBP(net)}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
                 {/* Subtotal row */}
                 <tfoot>
@@ -153,9 +162,14 @@ export default function PaySchedule() {
                     <td className="px-3 py-2 font-mono text-right text-gray-200">
                       {formatGBP(tyBlock.subtotals.base_salary + tyBlock.subtotals.bonus)}
                     </td>
+                    <td className="px-3 py-2 font-mono text-right text-red-400">
+                      {tyBlock.subtotals.pension > 0 ? `−${formatGBP(tyBlock.subtotals.pension)}` : ''}
+                    </td>
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2 font-mono text-right text-yellow-400">{formatGBP(tyBlock.subtotals.rsu)}</td>
-                    <td className="px-3 py-2 font-mono text-right text-brand">{formatGBP(tyBlock.subtotals.total_inc_rsu)}</td>
+                    <td className="px-3 py-2 font-mono text-right text-brand">
+                      {formatGBP(tyBlock.subtotals.total_inc_rsu - tyBlock.subtotals.pension)}
+                    </td>
                   </tr>
                 </tfoot>
               </table>

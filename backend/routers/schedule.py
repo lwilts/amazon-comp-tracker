@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from ..auth import require_auth
 from ..database import get_db
-from ..models import AppConfig, BonusConfig, PriceHistory, RSUVest, SalaryConfig
+from ..models import AppConfig, BonusConfig, PensionConfig, PriceHistory, RSUVest, SalaryConfig
 from ..schemas import (
     PayLineItem,
     ScheduleResponse,
@@ -61,6 +61,7 @@ def compute_schedule(
     # Load all configs
     salary_configs = db.query(SalaryConfig).all()
     bonus_configs = db.query(BonusConfig).all()
+    pension_configs = db.query(PensionConfig).all()
     rsu_vests = db.query(RSUVest).all()
 
     # Date range
@@ -81,12 +82,26 @@ def compute_schedule(
                 monthly = sc.annual_amount / 12
                 if pay_date == PRORATION_PAY_DATE:
                     monthly = monthly * PRORATION_FACTOR
+
+                active_pensions = [
+                    pc for pc in pension_configs
+                    if pc.effective_from <= pay_date and (pc.effective_to is None or pc.effective_to >= pay_date)
+                ]
+                pension_gbp = None
+                if active_pensions:
+                    deduction = sum(
+                        monthly * (pc.amount / 100) if pc.amount_type == "percentage" else pc.amount
+                        for pc in active_pensions
+                    )
+                    pension_gbp = round(deduction, 2)
+
                 line_items.append(PayLineItem(
                     line_date=pay_date,
                     pay_date=pay_date,
                     type="salary",
                     description=f"Base salary{' (' + sc.notes + ')' if sc.notes else ''}",
                     cash_gbp=round(monthly, 2),
+                    pension_gbp=pension_gbp,
                     is_estimated=False,
                     status="confirmed",
                     tax_year=tax_year_for(pay_date),
@@ -159,6 +174,7 @@ def compute_schedule(
     for ty in sorted(by_year.keys()):
         lines = by_year[ty]
         base_salary = sum(i.cash_gbp for i in lines if i.type == "salary" and i.cash_gbp)
+        pension = sum(i.pension_gbp for i in lines if i.type == "salary" and i.pension_gbp)
         bonus = sum(i.cash_gbp for i in lines if i.type == "bonus" and i.cash_gbp)
         rsu = sum(i.rsu_value_gbp for i in lines if i.type == "rsu" and i.rsu_value_gbp)
         total_cash = base_salary + bonus
@@ -167,6 +183,7 @@ def compute_schedule(
             lines=lines,
             subtotals=TaxYearSubtotals(
                 base_salary=round(base_salary, 2),
+                pension=round(pension, 2),
                 bonus=round(bonus, 2),
                 rsu=round(rsu, 2),
                 total_cash=round(total_cash, 2),

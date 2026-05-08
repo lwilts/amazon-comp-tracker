@@ -91,6 +91,138 @@ On first start you'll be prompted to set a password. After that, populate your d
 
 ---
 
+## API
+
+The app exposes a REST API under `/api`. All endpoints except `/api/auth/*` require an authenticated session cookie.
+
+**Interactive docs** (when running locally): http://localhost:8000/docs
+
+### Authentication
+
+```bash
+# Check status
+curl http://localhost:8000/api/auth/status
+
+# Set password (first run)
+curl -X POST http://localhost:8000/api/auth/set-password \
+  -H "Content-Type: application/json" \
+  -d '{"password":"yourpassword","confirm_password":"yourpassword"}'
+
+# Log in — save the session cookie for subsequent requests
+curl -c cookies.txt -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"password":"yourpassword"}'
+
+# All authenticated requests pass the cookie jar
+alias acurl='curl -b cookies.txt'
+```
+
+### Salary
+
+```bash
+# List
+acurl http://localhost:8000/api/salary
+
+# Add a salary period
+acurl -X POST http://localhost:8000/api/salary \
+  -H "Content-Type: application/json" \
+  -d '{"annual_amount":75000,"effective_from":"2025-01-28","effective_to":null,"notes":"Level 5"}'
+
+# Update
+acurl -X PUT http://localhost:8000/api/salary/1 \
+  -H "Content-Type: application/json" \
+  -d '{"annual_amount":80000,"effective_from":"2025-01-28","effective_to":null,"notes":"Level 5"}'
+
+# Delete
+acurl -X DELETE http://localhost:8000/api/salary/1
+```
+
+### Pension
+
+```bash
+# List
+acurl http://localhost:8000/api/pension
+
+# Add — percentage of base salary
+acurl -X POST http://localhost:8000/api/pension \
+  -H "Content-Type: application/json" \
+  -d '{"amount_type":"percentage","amount":5,"effective_from":"2025-01-28","effective_to":null,"notes":"Employee contribution"}'
+
+# Add — fixed monthly amount
+acurl -X POST http://localhost:8000/api/pension \
+  -H "Content-Type: application/json" \
+  -d '{"amount_type":"fixed","amount":200,"effective_from":"2025-01-28","effective_to":null,"notes":null}'
+
+# Update / Delete follow the same pattern as salary
+```
+
+### Bonuses
+
+`frequency` is one of `monthly`, `quarterly`, `annual`, `custom`. `pay_months` is an array of month numbers (1–12); required for `quarterly`, `annual`, and `custom`, ignored for `monthly`.
+
+```bash
+# List
+acurl http://localhost:8000/api/bonuses
+
+# Monthly bonus
+acurl -X POST http://localhost:8000/api/bonuses \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Sign-on","annual_amount":10000,"frequency":"monthly","pay_months":[],"effective_from":"2025-01-28","effective_to":"2025-12-28","notes":null}'
+
+# Quarterly bonus (paid in Jan, Apr, Jul, Oct)
+acurl -X POST http://localhost:8000/api/bonuses \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Performance","annual_amount":8000,"frequency":"quarterly","pay_months":[1,4,7,10],"effective_from":"2026-01-28","effective_to":null,"notes":null}'
+
+# Update / Delete follow the same pattern as salary
+```
+
+### RSU Awards & Vests
+
+RSU awards are the top-level grant. Each award has one or more vest events. Create the award first, then add vests using the returned `id`.
+
+```bash
+# List awards
+acurl http://localhost:8000/api/rsu/awards
+
+# Create an award
+acurl -X POST http://localhost:8000/api/rsu/awards \
+  -H "Content-Type: application/json" \
+  -d '{"award_ref":"GRANT-2025-A","grant_date":"2025-01-06","notes":null}'
+
+# Add a vest to award id 1
+acurl -X POST http://localhost:8000/api/rsu/vests \
+  -H "Content-Type: application/json" \
+  -d '{"award_id":1,"vest_date":"2026-01-06","shares":25,"notes":null}'
+
+# List all vests
+acurl http://localhost:8000/api/rsu/vests
+
+# Lock a past vest at a specific price (manually override)
+acurl -X POST http://localhost:8000/api/rsu/vests/1/lock \
+  -H "Content-Type: application/json" \
+  -d '{"locked_price_usd":195.50,"locked_fx_rate":0.7850}'
+
+# Re-lock all past vests using historical EOD prices
+acurl -X POST http://localhost:8000/api/rsu/vests/lock-historical
+```
+
+### Pay schedule
+
+```bash
+acurl http://localhost:8000/api/schedule
+# Optional filters: ?from_date=2025-04-06&to_date=2026-04-05
+```
+
+### Prices
+
+```bash
+acurl http://localhost:8000/api/prices/current
+acurl -X POST http://localhost:8000/api/prices/refresh
+```
+
+---
+
 ## Configuration
 
 All configuration is via environment variables.

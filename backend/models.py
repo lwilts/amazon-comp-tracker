@@ -64,6 +64,17 @@ class RSUVest(Base):
     award: Mapped[RSUAward] = relationship("RSUAward", back_populates="vests")
 
 
+class PensionConfig(Base):
+    __tablename__ = "pension_configs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    amount_type: Mapped[str] = mapped_column(String, nullable=False)  # "percentage" | "fixed"
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    effective_from: Mapped[date] = mapped_column(Date, nullable=False)
+    effective_to: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
 class PriceHistory(Base):
     __tablename__ = "price_history"
 

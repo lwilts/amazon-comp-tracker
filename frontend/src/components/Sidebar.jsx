@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Banknote,
   Gift,
+  Landmark,
   TrendingUp,
   CalendarDays,
   Settings,
@@ -14,6 +15,7 @@ import api from '../api'
 const NAV = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/salary', label: 'Salary', icon: Banknote },
+  { path: '/pension', label: 'Pension', icon: Landmark },
   { path: '/bonuses', label: 'Bonuses', icon: Gift },
   { path: '/rsu', label: 'RSU Awards', icon: TrendingUp },
   { path: '/schedule', label: 'Pay Schedule', icon: CalendarDays },

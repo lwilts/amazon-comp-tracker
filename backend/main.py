@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from .database import SessionLocal, init_db, lock_historical_vests
-from .routers import auth, bonuses, config, prices, rsu, salary, schedule
+from .routers import auth, bonuses, config, pension, prices, rsu, salary, schedule
 
 logging.basicConfig(
     level=logging.INFO,
@@ -62,6 +62,7 @@ app.include_router(config.router, prefix="/api/config", tags=["config"])
 app.include_router(salary.router, prefix="/api/salary", tags=["salary"])
 app.include_router(bonuses.router, prefix="/api/bonuses", tags=["bonuses"])
 app.include_router(rsu.router, prefix="/api/rsu", tags=["rsu"])
+app.include_router(pension.router, prefix="/api/pension", tags=["pension"])
 app.include_router(schedule.router, prefix="/api/schedule", tags=["schedule"])
 app.include_router(prices.router, prefix="/api/prices", tags=["prices"])
 
