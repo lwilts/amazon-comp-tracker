@@ -24,7 +24,8 @@ mkdir -p data
 
 curl -O https://raw.githubusercontent.com/lwilts/amazon-comp-tracker/main/docker-compose.yml
 
-SECRET_KEY=$(openssl rand -hex 32) docker compose up -d
+echo "SECRET_KEY=$(openssl rand -hex 32)" > .env
+docker compose up -d
 ```
 
 Open **http://localhost:8000** — you'll be prompted to set a password on first run.
@@ -82,7 +83,7 @@ Open **http://localhost:8000**.
 
 ## First run
 
-On first start the app seeds example salary, bonus, and RSU data so every page has something to show. Replace it all via the UI:
+On first start you'll be prompted to set a password. After that, populate your data via the UI:
 
 1. **Salary** — add your salary periods with effective dates
 2. **Bonuses** — configure sign-on, performance, or any other bonuses; choose monthly, quarterly, annual, or custom schedule
