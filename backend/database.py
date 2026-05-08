@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+from datetime import date
 from typing import Generator
 
 from sqlalchemy import create_engine, event, text
@@ -42,7 +43,6 @@ def get_db() -> Generator[Session, None, None]:
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables initialised")
-
 
 
 def lock_historical_vests(db: Session) -> int:
