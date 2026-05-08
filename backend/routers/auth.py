@@ -24,8 +24,11 @@ router = APIRouter()
 
 
 @router.get("/status", response_model=AuthStatusResponse)
-async def auth_status(request: Request):
-    return AuthStatusResponse(authenticated=bool(request.session.get("authenticated")))
+async def auth_status(request: Request, db: Session = Depends(get_db)):
+    return AuthStatusResponse(
+        authenticated=bool(request.session.get("authenticated")),
+        password_set=get_password_hash(db) is not None,
+    )
 
 
 @router.post("/login")

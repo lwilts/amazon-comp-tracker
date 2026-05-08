@@ -27,7 +27,7 @@ export default function SetPassword() {
     setLoading(true)
     try {
       await api.post('/auth/set-password', { password, confirm_password: confirm })
-      await qc.invalidateQueries({ queryKey: ['auth-status'] })
+      await qc.refetchQueries({ queryKey: ['auth-status'] })
       navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to set password')

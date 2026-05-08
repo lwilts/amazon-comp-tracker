@@ -21,13 +21,14 @@ function Spinner() {
 }
 
 function AuthGuard({ children }) {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['auth-status'],
     queryFn: () => api.get('/auth/status').then((r) => r.data),
     retry: false,
   })
 
   if (isLoading) return <Spinner />
+  if (!data?.password_set) return <Navigate to="/setup" replace />
   if (!data?.authenticated) return <Navigate to="/login" replace />
   return children
 }

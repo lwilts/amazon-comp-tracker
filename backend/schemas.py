@@ -184,6 +184,7 @@ class LoginRequest(BaseModel):
 
 class AuthStatusResponse(BaseModel):
     authenticated: bool
+    password_set: bool
 
 
 class SetPasswordRequest(BaseModel):
