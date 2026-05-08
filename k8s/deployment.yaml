@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amazon-comp-tracker
+  namespace: default
+  labels:
+    app: amazon-comp-tracker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: amazon-comp-tracker
+  template:
+    metadata:
+      labels:
+        app: amazon-comp-tracker
+    spec:
+      containers:
+        - name: amazon-comp-tracker
+          image: ghcr.io/lwilts/amazon-comp-tracker:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATA_DIR
+              value: /data
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: amazon-comp-tracker-secrets
+                  key: secret-key
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /api/auth/status
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/auth/status
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: amazon-comp-tracker-data

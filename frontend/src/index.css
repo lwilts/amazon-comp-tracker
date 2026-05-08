@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #161b22;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3d444d;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand hover:bg-brand-dim text-white font-medium px-4 py-2 rounded-md transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-surface-600 hover:bg-surface-500 text-gray-200 font-medium px-4 py-2 rounded-md transition-colors duration-150;
+  }
+  .btn-danger {
+    @apply bg-red-700 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-150;
+  }
+  .card {
+    @apply bg-surface-800 border border-surface-600 rounded-lg p-5;
+  }
+  .input {
+    @apply bg-surface-700 border border-surface-600 text-gray-100 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand placeholder-gray-500;
+  }
+  .label {
+    @apply block text-xs text-gray-400 mb-1 uppercase tracking-wide;
+  }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+  .table-row-hover {
+    @apply hover:bg-surface-700 transition-colors duration-75;
+  }
+}

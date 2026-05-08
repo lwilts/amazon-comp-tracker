@@ -1,0 +1,8 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: amazon-comp-tracker:dev
+    environment:
+      - SECRET_KEY=dev-secret-change-for-production
