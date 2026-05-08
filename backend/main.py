@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from .database import SessionLocal, init_db, lock_historical_vests, seed_data
+from .database import SessionLocal, init_db, lock_historical_vests
 from .routers import auth, bonuses, config, prices, rsu, salary, schedule
 
 logging.basicConfig(
@@ -31,7 +31,6 @@ async def lifespan(app: FastAPI):
 
     db = SessionLocal()
     try:
-        seed_data(db)
         n = lock_historical_vests(db)
         if n:
             logger.info("Locked %d past vest(s) using historical prices", n)

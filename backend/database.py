@@ -1,22 +1,13 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
-from datetime import date
 from typing import Generator
 
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from .models import (
-    AppConfig,
-    Base,
-    BonusConfig,
-    RSUAward,
-    RSUVest,
-    SalaryConfig,
-)
+from .models import Base, RSUVest
 
 logger = logging.getLogger(__name__)
 
@@ -52,86 +43,6 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables initialised")
 
-
-def seed_data(db: Session) -> None:
-    existing = db.get(AppConfig, "seeded")
-    if existing:
-        return
-
-    try:
-        _do_seed(db)
-        db.add(AppConfig(key="seeded", value="true"))
-        db.add(AppConfig(key="employment_start_date", value="2025-01-06"))
-        db.commit()
-        logger.info("Seed data inserted successfully")
-    except Exception:
-        db.rollback()
-        logger.exception("Failed to seed data — continuing without seed")
-
-
-def _do_seed(db: Session) -> None:
-    # Example salary — replace with your own values via the UI
-    db.add(SalaryConfig(
-        annual_amount=75000.0,
-        effective_from=date(2025, 1, 28),
-        effective_to=None,
-        notes="Example — update via Salary page",
-    ))
-
-    # Example bonuses
-    db.add(BonusConfig(
-        name="Sign-on Year 1",
-        annual_amount=10000.0,
-        frequency="monthly",
-        pay_months="[]",
-        effective_from=date(2025, 1, 28),
-        effective_to=date(2025, 12, 28),
-        notes="",
-    ))
-    db.add(BonusConfig(
-        name="Sign-on Year 2",
-        annual_amount=5000.0,
-        frequency="monthly",
-        pay_months="[]",
-        effective_from=date(2026, 1, 28),
-        effective_to=date(2026, 12, 28),
-        notes="",
-    ))
-    db.add(BonusConfig(
-        name="Performance Bonus",
-        annual_amount=8000.0,
-        frequency="quarterly",
-        pay_months=json.dumps([1, 4, 7, 10]),
-        effective_from=date(2026, 1, 28),
-        effective_to=None,
-        notes="",
-    ))
-
-    # Example RSU award
-    award = RSUAward(
-        award_ref="GRANT-2025-A",
-        grant_date=date(2025, 1, 6),
-        notes="Example grant — update via RSU Awards page",
-    )
-    db.add(award)
-    db.flush()  # get award.id
-
-    vest_schedule = [
-        (date(2026, 1, 6),  10),
-        (date(2027, 1, 6),  20),
-        (date(2027, 7, 6),  25),
-        (date(2028, 1, 6),  25),
-        (date(2028, 7, 6),  25),
-        (date(2029, 1, 6),  25),
-    ]
-    for vest_date, shares in vest_schedule:
-        db.add(RSUVest(
-            award_id=award.id,
-            vest_date=vest_date,
-            shares=shares,
-            is_locked=False,
-            manually_overridden=False,
-        ))
 
 
 def lock_historical_vests(db: Session) -> int:
