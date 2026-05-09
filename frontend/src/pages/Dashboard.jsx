@@ -176,11 +176,11 @@ export default function Dashboard() {
                 const taxableGross = grossTotal - tyPension
                 return <>
                   <div className="flex justify-between font-semibold">
-                    <span className="text-gray-300">Total gross</span>
+                    <span className="text-gray-300">Expected total gross</span>
                     <span className="font-mono text-gray-300">{fmt(grossTotal)}</span>
                   </div>
                   <div className="flex justify-between font-semibold">
-                    <span className="text-gray-300">Taxable gross</span>
+                    <span className="text-gray-300">Expected taxable gross</span>
                     <span className="font-mono text-brand">{fmt(taxableGross)}</span>
                   </div>
                 </>
