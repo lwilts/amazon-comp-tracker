@@ -162,24 +162,16 @@ export default function Dashboard() {
                 const tyPension = tyBlock?.subtotals.pension || 0
                 const tyRsu = (tyBlock?.lines || []).filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0)
                 const grossTotal = (tyBlock?.subtotals.total_cash || 0) + tyRsu
-                const netTotal = grossTotal - tyPension
+                const taxableGross = grossTotal - tyPension
                 return <>
                   <div className="flex justify-between font-semibold">
-                    <span className="text-gray-300">Projected full year (gross)</span>
+                    <span className="text-gray-300">Total gross</span>
                     <span className="font-mono text-gray-300">{fmt(grossTotal)}</span>
                   </div>
-                  {tyPension > 0 && (
-                    <div className="flex justify-between font-semibold">
-                      <span className="text-gray-300">After pension</span>
-                      <span className="font-mono text-brand">{fmt(netTotal)}</span>
-                    </div>
-                  )}
-                  {tyPension === 0 && (
-                    <div className="flex justify-between font-semibold">
-                      <span className="text-gray-300">Projected full year</span>
-                      <span className="font-mono text-brand">{fmt(grossTotal)}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-between font-semibold">
+                    <span className="text-gray-300">Taxable gross</span>
+                    <span className="font-mono text-brand">{fmt(taxableGross)}</span>
+                  </div>
                 </>
               })()}
             </div>
@@ -228,7 +220,8 @@ export default function Dashboard() {
               <th className="pb-2 text-right">Pension</th>
               <th className="pb-2 text-right">Bonus</th>
               <th className="pb-2 text-right">RSU</th>
-              <th className="pb-2 text-right">Total (net)</th>
+              <th className="pb-2 text-right">Total Gross</th>
+              <th className="pb-2 text-right">Taxable Gross</th>
             </tr>
           </thead>
           <tbody>
@@ -248,12 +241,17 @@ export default function Dashboard() {
                 <td className="py-2 text-right font-mono text-yellow-400">
                   {fmt(t.lines.filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0))}
                 </td>
-                <td className="py-2 text-right font-mono font-semibold text-brand">
-                  {fmt(
-                    (t.subtotals.total_cash - t.subtotals.pension) +
-                    t.lines.filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0)
-                  )}
-                </td>
+                {(() => {
+                  const tyRsu = t.lines.filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0)
+                  return <>
+                    <td className="py-2 text-right font-mono text-gray-300">
+                      {fmt(t.subtotals.total_cash + tyRsu)}
+                    </td>
+                    <td className="py-2 text-right font-mono font-semibold text-brand">
+                      {fmt((t.subtotals.total_cash - t.subtotals.pension) + tyRsu)}
+                    </td>
+                  </>
+                })()}
               </tr>
             ))}
           </tbody>
