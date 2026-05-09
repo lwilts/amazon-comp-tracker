@@ -96,7 +96,7 @@ export default function Pension() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-gray-100">Pension</h1>
         <button className="btn-primary flex items-center gap-2" onClick={() => setShowForm(true)}>
-          <Plus size={15} /> Add pension period
+          <Plus size={15} /> Add pension contribution
         </button>
       </div>
 
@@ -104,7 +104,7 @@ export default function Pension() {
         <div className="card">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-300">
-              {editingId ? 'Edit Pension Period' : 'Add Pension Period'}
+              {editingId ? 'Edit Pension Contribution' : 'Add Pension Contribution'}
             </span>
             <button onClick={closeForm} className="text-gray-400 hover:text-gray-200"><X size={16} /></button>
           </div>
@@ -199,7 +199,7 @@ export default function Pension() {
             {isLoading ? (
               <tr><td colSpan={7} className="px-4 py-6 text-center text-gray-500">Loading…</td></tr>
             ) : configs.length === 0 ? (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-gray-500">No pension periods configured</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-gray-500">No pension contributions added</td></tr>
             ) : configs.map((cfg) => (
               <tr key={cfg.id} className="border-b border-surface-700 table-row-hover">
                 <td className="px-4 py-3 font-mono text-brand font-semibold">{formatAmount(cfg)}</td>

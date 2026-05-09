@@ -89,7 +89,7 @@ export default function Salary() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-gray-100">Salary Configuration</h1>
         <button className="btn-primary flex items-center gap-2" onClick={() => setShowForm(true)}>
-          <Plus size={15} /> Add salary period
+          <Plus size={15} /> Add salary
         </button>
       </div>
 
@@ -178,7 +178,7 @@ export default function Salary() {
             {isLoading ? (
               <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-500">Loading…</td></tr>
             ) : configs.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-500">No salary configs yet</td></tr>
+              <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-500">No salary added</td></tr>
             ) : configs.map((cfg) => (
               <tr key={cfg.id} className="border-b border-surface-700 table-row-hover">
                 <td className="px-4 py-3 font-mono text-brand font-semibold">{formatGBP(cfg.annual_amount)}/yr</td>
