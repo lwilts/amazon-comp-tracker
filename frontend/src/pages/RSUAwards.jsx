@@ -67,14 +67,44 @@ function EditCell({ active, value, onChange, onCommit, onCancel, step = '0.01', 
   )
 }
 
-const EMPTY_AWARD = { award_ref: '', grant_date: '', notes: '' }
-const EMPTY_VEST  = { vest_date: '', shares: '', notes: '' }
+const EMPTY_AWARD   = { award_ref: '', grant_date: '', notes: '' }
+const EMPTY_VEST    = { vest_date: '', shares: '', notes: '' }
+const EMPTY_STARTER = { award_ref: '', grant_date: '', total_shares: '', notes: '' }
+
+const STARTER_SCHEDULE = [
+  { months: 12, pct: 0.05 },
+  { months: 24, pct: 0.15 },
+  { months: 30, pct: 0.20 },
+  { months: 36, pct: 0.20 },
+  { months: 42, pct: 0.20 },
+  { months: 48, pct: 0.20 },
+]
+
+function addMonths(dateStr, months) {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const dt = new Date(y, m - 1 + months, d)
+  return dt.toISOString().slice(0, 10)
+}
+
+function calcStarterVests(grantDate, totalShares) {
+  let allocated = 0
+  return STARTER_SCHEDULE.map(({ months, pct }, i) => {
+    const shares = i < STARTER_SCHEDULE.length - 1
+      ? Math.floor(totalShares * pct)
+      : totalShares - allocated
+    allocated += shares
+    return { vest_date: addMonths(grantDate, months), shares, pct }
+  })
+}
 
 export default function RSUAwards() {
   const qc = useQueryClient()
   const [expanded,      setExpanded]      = useState(new Set())
   const [awardForm,     setAwardForm]      = useState(null)
   const [vestForm,      setVestForm]       = useState(null)
+  const [starterForm,   setStarterForm]    = useState(null)
+  const [starterLoading, setStarterLoading] = useState(false)
+  const [starterError,  setStarterError]   = useState(null)
   const [editingCell,   setEditingCell]    = useState(null)  // { vest, field } | null
   const [editValue,     setEditValue]      = useState('')
   const [unfixConfirm,  setUnfixConfirm]   = useState(null)
@@ -138,6 +168,27 @@ export default function RSUAwards() {
     vestId ? updateVest.mutate({ id: vestId, d: payload }) : createVest.mutate(payload)
   }
 
+  async function submitStarterAward(e) {
+    e.preventDefault()
+    setStarterError(null)
+    setStarterLoading(true)
+    try {
+      const { award_ref, grant_date, total_shares, notes } = starterForm
+      const award = await api.post('/rsu/awards', {
+        award_ref, grant_date, notes: notes || null,
+      }).then((r) => r.data)
+      const vests = calcStarterVests(grant_date, parseInt(total_shares))
+      await Promise.all(vests.map((v) => api.post('/rsu/vests', { award_id: award.id, vest_date: v.vest_date, shares: v.shares, notes: null })))
+      inv()
+      setExpanded((s) => new Set([...s, award.id]))
+      setStarterForm(null)
+    } catch {
+      setStarterError('Something went wrong — please try again.')
+    } finally {
+      setStarterLoading(false)
+    }
+  }
+
   function startEdit(vest, field) {
     let val = ''
     if (field === 'price') {
@@ -198,9 +249,14 @@ export default function RSUAwards() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-gray-100">RSU Awards</h1>
-        <button className="btn-primary flex items-center gap-2" onClick={() => setAwardForm({ data: EMPTY_AWARD })}>
-          <Plus size={15} /> Add award
-        </button>
+        <div className="flex items-center gap-2">
+          <button className="btn-secondary flex items-center gap-2" onClick={() => { setStarterForm(EMPTY_STARTER); setStarterError(null) }}>
+            <Plus size={15} /> New starter award
+          </button>
+          <button className="btn-primary flex items-center gap-2" onClick={() => setAwardForm({ data: EMPTY_AWARD })}>
+            <Plus size={15} /> Add award
+          </button>
+        </div>
       </div>
 
       {/* Award form */}
@@ -428,6 +484,89 @@ export default function RSUAwards() {
                 <button type="button" className="btn-secondary" onClick={() => setVestForm(null)}>Cancel</button>
                 <button type="submit" className="btn-primary flex items-center gap-2" disabled={createVest.isPending || updateVest.isPending}>
                   <Check size={14} /> Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* New starter award helper */}
+      {starterForm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="card w-[32rem]">
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-300">New Starter Award</span>
+              <button onClick={() => setStarterForm(null)} className="text-gray-400 hover:text-gray-200"><X size={16} /></button>
+            </div>
+            <form onSubmit={submitStarterAward} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="label">Grant Reference</label>
+                  <input className="input" value={starterForm.award_ref}
+                    onChange={(e) => setStarterForm({ ...starterForm, award_ref: e.target.value })}
+                    required placeholder="e.g. GRANT-2025-A" />
+                </div>
+                <div>
+                  <label className="label">Start Date</label>
+                  <input type="date" className="input" value={starterForm.grant_date}
+                    onChange={(e) => setStarterForm({ ...starterForm, award_ref: starterForm.award_ref, grant_date: e.target.value })}
+                    required />
+                </div>
+                <div>
+                  <label className="label">Total RSUs</label>
+                  <input type="number" className="input" value={starterForm.total_shares}
+                    onChange={(e) => setStarterForm({ ...starterForm, total_shares: e.target.value })}
+                    required min={1} step={1} placeholder="e.g. 500" />
+                </div>
+                <div>
+                  <label className="label">Notes</label>
+                  <input className="input" value={starterForm.notes}
+                    onChange={(e) => setStarterForm({ ...starterForm, notes: e.target.value })}
+                    placeholder="optional" />
+                </div>
+              </div>
+
+              {starterForm.grant_date && starterForm.total_shares > 0 && (() => {
+                const vests = calcStarterVests(starterForm.grant_date, parseInt(starterForm.total_shares) || 0)
+                return (
+                  <div>
+                    <p className="label mb-1">Vesting schedule preview</p>
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-surface-600 text-gray-500 uppercase tracking-wide">
+                          <th className="py-1 text-left">Vest Date</th>
+                          <th className="py-1 text-right">Shares</th>
+                          <th className="py-1 text-right">%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {vests.map((v, i) => (
+                          <tr key={i} className="border-b border-surface-700">
+                            <td className="py-1 font-mono text-gray-300">{v.vest_date}</td>
+                            <td className="py-1 font-mono text-right text-gray-200">{v.shares}</td>
+                            <td className="py-1 font-mono text-right text-gray-400">{Math.round(v.pct * 100)}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="text-gray-400 font-semibold">
+                          <td className="pt-1">Total</td>
+                          <td className="pt-1 font-mono text-right text-gray-200">{vests.reduce((s, v) => s + v.shares, 0)}</td>
+                          <td className="pt-1 font-mono text-right">100%</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                )
+              })()}
+
+              {starterError && <p className="text-sm text-red-400">{starterError}</p>}
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button type="button" className="btn-secondary" onClick={() => setStarterForm(null)}>Cancel</button>
+                <button type="submit" className="btn-primary flex items-center gap-2" disabled={starterLoading}>
+                  <Check size={14} /> {starterLoading ? 'Creating…' : 'Create award & vests'}
                 </button>
               </div>
             </form>
