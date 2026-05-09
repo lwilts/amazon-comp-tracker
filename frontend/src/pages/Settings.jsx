@@ -2,14 +2,10 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { RefreshCw, Check } from 'lucide-react'
 import api from '../api'
-import { useSettings, useUpdateSettings } from '../hooks/useSettings'
-
 export default function Settings() {
   const qc = useQueryClient()
   const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' })
   const [pwMsg, setPwMsg] = useState(null) // { type: 'success'|'error', text }
-  const { currency } = useSettings()
-  const updateSettings = useUpdateSettings()
 
   const { data: prices, refetch: refetchPrices } = useQuery({
     queryKey: ['prices'],
@@ -82,32 +78,6 @@ export default function Settings() {
             <Check size={14} /> {changePwMutation.isPending ? 'Saving…' : 'Change password'}
           </button>
         </form>
-      </div>
-
-      {/* Display preferences */}
-      <div className="card">
-        <h2 className="mb-4 text-sm font-semibold text-gray-300">Display Preferences</h2>
-        <div>
-          <label className="label">Currency</label>
-          <div className="flex gap-3 mt-1">
-            {['GBP', 'USD'].map((c) => (
-              <label key={c} className="flex items-center gap-2 cursor-pointer text-sm text-gray-300">
-                <input
-                  type="radio"
-                  name="currency"
-                  value={c}
-                  checked={currency === c}
-                  onChange={() => updateSettings.mutate({ display_currency: c })}
-                  className="accent-brand"
-                />
-                {c === 'GBP' ? '£ GBP' : '$ USD'}
-              </label>
-            ))}
-          </div>
-          <p className="mt-2 text-xs text-gray-500">
-            Affects how RSU values and the dashboard are displayed. Salary and bonus amounts are shown as entered.
-          </p>
-        </div>
       </div>
 
       {/* Price data */}

@@ -1,10 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { RefreshCw, TrendingUp, Calendar, PoundSterling } from 'lucide-react'
+import { RefreshCw, TrendingUp, PoundSterling } from 'lucide-react'
 import api from '../api'
-import { useCurrencyFormatter } from '../hooks/useSettings'
 
-function formatUSD(v) {
+function fmt(v, decimals = 0) {
+  if (v == null) return '—'
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: decimals }).format(v)
+}
+
+function fmtUSD(v) {
   if (v == null) return '—'
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(v)
 }
@@ -38,14 +42,22 @@ function StatCard({ label, value, sub, icon: Icon, accent }) {
 
 export default function Dashboard() {
   const ty = currentTaxYear()
-  const { fmt, currency } = useCurrencyFormatter()
   const navigate = useNavigate()
+  const qc = useQueryClient()
 
   const { data: prices, isLoading: pricesLoading } = useQuery({
     queryKey: ['prices'],
     queryFn: () => api.get('/prices/current').then((r) => r.data),
     refetchInterval: 60_000,
     retry: false,
+  })
+
+  const refreshPrices = useMutation({
+    mutationFn: () => api.post('/prices/refresh'),
+    onSuccess: (res) => {
+      qc.setQueryData(['prices'], res.data)
+      qc.invalidateQueries({ queryKey: ['schedule'] })
+    },
   })
 
   const { data: schedule, isLoading: schedLoading } = useQuery({
@@ -60,11 +72,7 @@ export default function Dashboard() {
   const futureVests = allRsuLines.filter((l) => l.line_date >= today)
   const nextVest = futureVests.sort((a, b) => a.line_date.localeCompare(b.line_date))[0]
 
-  // RSU totals: in USD mode use shares × current price, in GBP mode use schedule values
-  const rsuValue = (line) =>
-    currency === 'USD'
-      ? (line.rsu_shares || 0) * (prices?.amzn_usd || 0)
-      : (line.rsu_value_gbp || 0)
+  const rsuValue = (line) => line.rsu_value_gbp || 0
   const totalUnvested = futureVests.reduce((s, l) => s + rsuValue(l), 0)
 
   const hasSalary = schedule?.tax_years?.some((t) => t.lines.some((l) => l.type === 'salary'))
@@ -87,10 +95,6 @@ export default function Dashboard() {
     ? new Date(prices.fetched_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
     : null
 
-  const amznConverted = prices
-    ? (currency === 'USD' ? null : fmt(prices.amzn_gbp))
-    : null
-
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-semibold text-gray-100">Dashboard</h1>
@@ -105,24 +109,31 @@ export default function Dashboard() {
       )}
 
       {/* Price cards */}
-      <div className={`grid gap-4 ${currency === 'USD' ? 'grid-cols-2' : 'grid-cols-3'}`}>
+      <div className="grid grid-cols-3 gap-4">
         <StatCard
           label="AMZN Price"
-          value={prices ? formatUSD(prices.amzn_usd) : 'No data'}
+          value={prices ? fmtUSD(prices.amzn_usd) : 'No data'}
           sub={prices
-            ? `${amznConverted ? amznConverted + ' · ' : ''}${fetchedAt}`
-            : 'Trigger a refresh in Settings'}
+            ? `${fmt(prices.amzn_gbp, 2)} · ${fetchedAt}`
+            : (
+              <button
+                onClick={() => refreshPrices.mutate()}
+                disabled={refreshPrices.isPending}
+                className="flex items-center gap-1 text-brand hover:text-brand/80 disabled:opacity-50"
+              >
+                <RefreshCw size={11} className={refreshPrices.isPending ? 'animate-spin' : ''} />
+                {refreshPrices.isPending ? 'Fetching…' : 'Refresh now'}
+              </button>
+            )}
           icon={TrendingUp}
           accent="text-brand"
         />
-        {currency === 'GBP' && (
-          <StatCard
-            label="USD / GBP Rate"
-            value={prices ? prices.usd_gbp.toFixed(4) : '—'}
-            sub="Live rate"
-            icon={RefreshCw}
-          />
-        )}
+        <StatCard
+          label="USD / GBP Rate"
+          value={prices ? prices.usd_gbp.toFixed(4) : '—'}
+          sub="Live rate"
+          icon={RefreshCw}
+        />
         <StatCard
           label={`Total Unvested RSU (Est)`}
           value={fmt(totalUnvested)}

@@ -2,7 +2,11 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Pencil, Trash2, X, Check, ChevronDown, ChevronRight, Lock, RotateCcw } from 'lucide-react'
 import api from '../api'
-import { useCurrencyFormatter } from '../hooks/useSettings'
+
+function fmt(v, decimals = 0) {
+  if (v == null) return '—'
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: decimals }).format(v)
+}
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
@@ -110,8 +114,6 @@ export default function RSUAwards() {
   const [unfixConfirm,  setUnfixConfirm]   = useState(null)
   const [confirmDelete, setConfirmDelete]  = useState(null) // { type: 'award'|'vest', id }
 
-  const { fmt, currency } = useCurrencyFormatter()
-
   const { data: awards = [], isLoading } = useQuery({
     queryKey: ['rsu-awards'],
     queryFn: () => api.get('/rsu/awards').then((r) => r.data),
@@ -124,13 +126,9 @@ export default function RSUAwards() {
   })
 
   function vestValue(vest) {
-    if (vest.is_locked) {
-      return currency === 'USD' ? vest.shares * vest.locked_price_usd : vest.locked_value_gbp
-    }
+    if (vest.is_locked) return vest.locked_value_gbp
     if (!prices) return null
-    return currency === 'USD'
-      ? vest.shares * prices.amzn_usd
-      : vest.shares * prices.amzn_usd * prices.usd_gbp
+    return vest.shares * prices.amzn_usd * prices.usd_gbp
   }
 
   const inv = () => {
@@ -338,8 +336,8 @@ export default function RSUAwards() {
                     <th className="px-4 py-2 text-right">Shares</th>
                     <th className="px-4 py-2 text-left">Status</th>
                     <th className="px-4 py-2 text-right">AMZN (USD)</th>
-                    {currency === 'GBP' && <th className="px-4 py-2 text-right">FX Rate</th>}
-                    <th className="px-4 py-2 text-right">{currency} Value</th>
+                    <th className="px-4 py-2 text-right">FX Rate</th>
+                    <th className="px-4 py-2 text-right">GBP Value</th>
                     <th className="px-4 py-2 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -373,28 +371,26 @@ export default function RSUAwards() {
                           )}
                         </td>
 
-                        {/* FX rate (GBP mode only) */}
-                        {currency === 'GBP' && (
-                          <td className="px-4 py-2 font-mono text-right">
-                            <EditCell
-                              active={isEditing(vest, 'fx')}
-                              value={editValue} onChange={setEditValue}
-                              onCommit={commitEdit} onCancel={cancelEdit}
-                              step="0.0001"
-                            />
-                            {!isEditing(vest, 'fx') && (
-                              vest.is_locked
-                                ? <span className={lockedCls} onClick={() => startEdit(vest, 'fx')}>{vest.locked_fx_rate?.toFixed(4)}</span>
-                                : prices
-                                  ? <span className={unlockedCls} onClick={() => startEdit(vest, 'fx')}>~{prices.usd_gbp.toFixed(4)}</span>
-                                  : <span className="text-gray-500">—</span>
-                            )}
-                          </td>
-                        )}
+                        {/* FX rate */}
+                        <td className="px-4 py-2 font-mono text-right">
+                          <EditCell
+                            active={isEditing(vest, 'fx')}
+                            value={editValue} onChange={setEditValue}
+                            onCommit={commitEdit} onCancel={cancelEdit}
+                            step="0.0001"
+                          />
+                          {!isEditing(vest, 'fx') && (
+                            vest.is_locked
+                              ? <span className={lockedCls} onClick={() => startEdit(vest, 'fx')}>{vest.locked_fx_rate?.toFixed(4)}</span>
+                              : prices
+                                ? <span className={unlockedCls} onClick={() => startEdit(vest, 'fx')}>~{prices.usd_gbp.toFixed(4)}</span>
+                                : <span className="text-gray-500">—</span>
+                          )}
+                        </td>
 
-                        {/* Value — editable in GBP mode, read-only in USD mode */}
+                        {/* GBP value — editable */}
                         <td className="px-4 py-2 font-mono text-right font-semibold">
-                          {currency === 'GBP' && isEditing(vest, 'gbp') ? (
+                          {isEditing(vest, 'gbp') ? (
                             <EditCell
                               active
                               value={editValue} onChange={setEditValue}
@@ -403,8 +399,8 @@ export default function RSUAwards() {
                             />
                           ) : (
                             <span
-                              className={`${vcls}${currency === 'GBP' ? ' cursor-text select-none rounded px-1 hover:bg-surface-600' : ''}`}
-                              onClick={currency === 'GBP' ? () => startEdit(vest, 'gbp') : undefined}
+                              className={`${vcls} cursor-text select-none rounded px-1 hover:bg-surface-600`}
+                              onClick={() => startEdit(vest, 'gbp')}
                             >
                               {status === 'projected' ? '~' : ''}{fmt(vestValue(vest))}
                             </span>

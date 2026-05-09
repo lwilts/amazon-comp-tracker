@@ -68,6 +68,7 @@ def start_scheduler() -> None:
         ),
         id="price_fetch",
         replace_existing=True,
+        next_run_time=datetime.now(tz=timezone.utc),  # fetch immediately on startup
     )
     scheduler.start()
     logger.info("Scheduler started — price fetch runs every 30 min Mon-Fri 14:00-21:30 UTC")
