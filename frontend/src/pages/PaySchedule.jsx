@@ -96,17 +96,16 @@ export default function PaySchedule() {
         ?.filter((t) => visibleYears.includes(t.tax_year))
         .map((tyBlock) => {
           const lines = tyBlock.lines.filter((l) => filterType === 'all' || l.type === filterType)
+          const headerTotalGross = lines.reduce((s, l) => s + (l.cash_gbp ?? l.rsu_value_gbp ?? 0), 0)
+          const headerPension = lines.reduce((s, l) => s + (l.pension_gbp || 0), 0)
           return (
             <div key={tyBlock.tax_year} className="card p-0 overflow-hidden">
               {/* Tax year header */}
               <div className="border-b border-surface-600 bg-surface-700 px-4 py-2 flex items-center justify-between">
                 <span className="font-semibold text-gray-200">Tax Year {tyBlock.tax_year}</span>
-                <div className="flex gap-4 text-xs font-mono text-gray-400">
-                  <span>Salary: {formatGBP(tyBlock.subtotals.base_salary)}</span>
-                  <span>Bonus: {formatGBP(tyBlock.subtotals.bonus)}</span>
-                  <span>RSU: {formatGBP(tyBlock.subtotals.rsu)}</span>
-                  <span className="text-gray-300">Total gross: {formatGBP(tyBlock.subtotals.total_inc_rsu)}</span>
-                  <span className="font-semibold text-brand">Taxable gross: {formatGBP(tyBlock.subtotals.total_inc_rsu - tyBlock.subtotals.pension)}</span>
+                <div className="flex gap-4 text-xs font-mono">
+                  <span className="text-gray-400">Total gross: {formatGBP(headerTotalGross)}</span>
+                  <span className="font-semibold text-brand">Taxable gross: {formatGBP(headerTotalGross - headerPension)}</span>
                 </div>
               </div>
 

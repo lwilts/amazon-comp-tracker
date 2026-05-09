@@ -230,7 +230,7 @@ export default function Dashboard() {
               <th className="pb-2 text-right">Salary (gross)</th>
               <th className="pb-2 text-right">Pension</th>
               <th className="pb-2 text-right">Bonus</th>
-              <th className="pb-2 text-right">RSU</th>
+              <th className="pb-2 text-right">RSUs</th>
               <th className="pb-2 text-right">Total Gross</th>
               <th className="pb-2 text-right">Taxable Gross</th>
             </tr>
