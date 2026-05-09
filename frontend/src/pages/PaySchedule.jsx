@@ -105,7 +105,8 @@ export default function PaySchedule() {
                   <span>Salary: {formatGBP(tyBlock.subtotals.base_salary)}</span>
                   <span>Bonus: {formatGBP(tyBlock.subtotals.bonus)}</span>
                   <span>RSU: {formatGBP(tyBlock.subtotals.rsu)}</span>
-                  <span className="font-semibold text-brand">Total: {formatGBP(tyBlock.subtotals.total_inc_rsu)}</span>
+                  <span className="text-gray-300">Total gross: {formatGBP(tyBlock.subtotals.total_inc_rsu)}</span>
+                  <span className="font-semibold text-brand">Taxable gross: {formatGBP(tyBlock.subtotals.total_inc_rsu - tyBlock.subtotals.pension)}</span>
                 </div>
               </div>
 
@@ -155,18 +156,28 @@ export default function PaySchedule() {
                     )
                   })}
                 </tbody>
-                {/* Subtotal row */}
+                {/* Subtotal rows */}
                 <tfoot>
                   <tr className="bg-surface-700 font-semibold text-xs">
-                    <td className="px-3 py-2 text-gray-300" colSpan={3}>Tax Year Totals</td>
+                    <td className="px-3 py-2 text-gray-300" colSpan={3}>Total gross</td>
                     <td className="px-3 py-2 font-mono text-right text-gray-200">
                       {formatGBP(tyBlock.subtotals.base_salary + tyBlock.subtotals.bonus)}
                     </td>
+                    <td className="px-3 py-2" />
+                    <td className="px-3 py-2" />
+                    <td className="px-3 py-2 font-mono text-right text-yellow-400">{formatGBP(tyBlock.subtotals.rsu)}</td>
+                    <td className="px-3 py-2 font-mono text-right text-gray-300">
+                      {formatGBP(tyBlock.subtotals.total_inc_rsu)}
+                    </td>
+                  </tr>
+                  <tr className="bg-surface-700 font-semibold text-xs border-t border-surface-600">
+                    <td className="px-3 py-2 text-brand" colSpan={3}>Taxable gross</td>
+                    <td className="px-3 py-2" />
                     <td className="px-3 py-2 font-mono text-right text-red-400">
                       {tyBlock.subtotals.pension > 0 ? `−${formatGBP(tyBlock.subtotals.pension)}` : ''}
                     </td>
                     <td className="px-3 py-2" />
-                    <td className="px-3 py-2 font-mono text-right text-yellow-400">{formatGBP(tyBlock.subtotals.rsu)}</td>
+                    <td className="px-3 py-2" />
                     <td className="px-3 py-2 font-mono text-right text-brand">
                       {formatGBP(tyBlock.subtotals.total_inc_rsu - tyBlock.subtotals.pension)}
                     </td>
