@@ -165,7 +165,7 @@ export default function Bonuses() {
             <button onClick={closeForm} className="text-gray-400 hover:text-gray-200"><X size={16} /></button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label">Name</label>
                 <input className="input" value={form.name}
@@ -224,7 +224,7 @@ export default function Bonuses() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label">Effective From</label>
                 <input type="date" className="input" value={form.effective_from}
@@ -264,17 +264,18 @@ export default function Bonuses() {
       )}
 
       <div className="card p-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-max text-sm">
           <thead>
             <tr className="border-b border-surface-600 text-xs uppercase tracking-wide text-gray-500">
-              <th className="px-4 py-3 text-left">Name</th>
-              <th className="px-4 py-3 text-left">Amount</th>
-              <th className="px-4 py-3 text-left">Frequency</th>
-              <th className="px-4 py-3 text-left">Pay Months</th>
-              <th className="px-4 py-3 text-left">From</th>
-              <th className="px-4 py-3 text-left">To</th>
-              <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Name</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Amount</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Frequency</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Pay Months</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">From</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">To</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Status</th>
+              <th className="px-4 py-3 text-right whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -323,6 +324,7 @@ export default function Bonuses() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

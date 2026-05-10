@@ -101,7 +101,7 @@ export default function Salary() {
             </span>
             <button onClick={closeForm} className="text-gray-400 hover:text-gray-200"><X size={16} /></button>
           </div>
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="label">Annual Amount (£)</label>
               <input
@@ -163,15 +163,16 @@ export default function Salary() {
       )}
 
       <div className="card p-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-max text-sm">
           <thead>
             <tr className="border-b border-surface-600 text-xs uppercase tracking-wide text-gray-500">
-              <th className="px-4 py-3 text-left">Annual Amount</th>
-              <th className="px-4 py-3 text-left">Effective From</th>
-              <th className="px-4 py-3 text-left">Effective To</th>
-              <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-left">Notes</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Annual Amount</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Effective From</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Effective To</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Status</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Notes</th>
+              <th className="px-4 py-3 text-right whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -210,6 +211,7 @@ export default function Salary() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

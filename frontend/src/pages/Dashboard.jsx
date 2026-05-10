@@ -109,7 +109,7 @@ export default function Dashboard() {
       )}
 
       {/* Price cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           label="AMZN Price"
           value={prices ? fmtUSD(prices.amzn_usd) : 'No data'}
@@ -144,7 +144,7 @@ export default function Dashboard() {
       </div>
 
       {/* Tax year + next vest */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="card">
           <div className="mb-3 text-sm font-semibold text-gray-300">
             Tax Year {ty} — Year to Date
@@ -156,7 +156,7 @@ export default function Dashboard() {
             </div>
             {ytdPension > 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-400">Pension sacrifice</span>
+                <span className="text-gray-400">Salary sacrifice</span>
                 <span className="font-mono text-red-400">−{fmt(ytdPension)}</span>
               </div>
             )}
@@ -223,42 +223,43 @@ export default function Dashboard() {
       {/* Tax year summary table */}
       <div className="card">
         <div className="mb-3 text-sm font-semibold text-gray-300">All Tax Years</div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-max text-sm">
           <thead>
             <tr className="border-b border-surface-600 text-xs uppercase tracking-wide text-gray-500">
-              <th className="pb-2 text-left">Tax Year</th>
-              <th className="pb-2 text-right">Salary (gross)</th>
-              <th className="pb-2 text-right">Pension</th>
-              <th className="pb-2 text-right">Bonus</th>
-              <th className="pb-2 text-right">RSUs</th>
-              <th className="pb-2 text-right">Total Gross</th>
-              <th className="pb-2 text-right">Taxable Gross</th>
+              <th className="px-3 py-2 text-left whitespace-nowrap">Tax Year</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap">Salary (gross)</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap">Sal. sac.</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap">Bonus</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap">RSUs</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap">Total Gross</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap">Taxable Gross</th>
             </tr>
           </thead>
           <tbody>
             {schedule?.tax_years?.map((t) => (
               <tr key={t.tax_year} className="border-b border-surface-700 table-row-hover">
-                <td className="py-2 text-gray-300 font-mono">
+                <td className="px-3 py-2 text-gray-300 font-mono whitespace-nowrap">
                   {t.tax_year}
                   {t.tax_year === ty && (
                     <span className="ml-2 badge bg-brand/20 text-brand">current</span>
                   )}
                 </td>
-                <td className="py-2 text-right font-mono text-gray-300">{fmt(t.subtotals.base_salary)}</td>
-                <td className="py-2 text-right font-mono text-red-400">
+                <td className="px-3 py-2 text-right font-mono text-gray-300">{fmt(t.subtotals.base_salary)}</td>
+                <td className="px-3 py-2 text-right font-mono text-red-400">
                   {t.subtotals.pension > 0 ? `−${fmt(t.subtotals.pension)}` : '—'}
                 </td>
-                <td className="py-2 text-right font-mono text-gray-300">{fmt(t.subtotals.bonus)}</td>
-                <td className="py-2 text-right font-mono text-yellow-400">
+                <td className="px-3 py-2 text-right font-mono text-gray-300">{fmt(t.subtotals.bonus)}</td>
+                <td className="px-3 py-2 text-right font-mono text-yellow-400">
                   {fmt(t.lines.filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0))}
                 </td>
                 {(() => {
                   const tyRsu = t.lines.filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0)
                   return <>
-                    <td className="py-2 text-right font-mono text-gray-300">
+                    <td className="px-3 py-2 text-right font-mono text-gray-300">
                       {fmt(t.subtotals.total_cash + tyRsu)}
                     </td>
-                    <td className="py-2 text-right font-mono font-semibold text-brand">
+                    <td className="px-3 py-2 text-right font-mono font-semibold text-brand">
                       {fmt((t.subtotals.total_cash - t.subtotals.pension) + tyRsu)}
                     </td>
                   </>
@@ -267,6 +268,7 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

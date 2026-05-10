@@ -15,14 +15,14 @@ import api from '../api'
 const NAV = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/salary', label: 'Salary', icon: Banknote },
-  { path: '/pension', label: 'Pension', icon: Landmark },
+  { path: '/pension', label: 'Salary sacrifice', icon: Landmark },
   { path: '/bonuses', label: 'Bonuses', icon: Gift },
   { path: '/rsu', label: 'RSU Awards', icon: TrendingUp },
   { path: '/schedule', label: 'Pay Schedule', icon: CalendarDays },
   { path: '/settings', label: 'Settings', icon: Settings },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }) {
   const location = useLocation()
   const navigate = useNavigate()
   const qc = useQueryClient()
@@ -34,7 +34,12 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="flex w-52 flex-shrink-0 flex-col border-r border-surface-600 bg-surface-800">
+    <aside className={[
+      'flex w-52 flex-shrink-0 flex-col border-r border-surface-600 bg-surface-800',
+      'fixed inset-y-0 left-0 z-50 transition-transform duration-200',
+      open ? 'translate-x-0' : '-translate-x-full',
+      'md:relative md:z-auto md:translate-x-0',
+    ].join(' ')}>
       <div className="border-b border-surface-600 px-4 py-4">
         <div className="text-lg font-semibold text-brand">Amazon Comp Tracker</div>
       </div>
@@ -45,7 +50,7 @@ export default function Sidebar() {
           return (
             <button
               key={path}
-              onClick={() => navigate(path)}
+              onClick={() => { navigate(path); onClose?.() }}
               className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-100 ${
                 active
                   ? 'border-l-2 border-brand bg-surface-700 pl-2.5 text-brand'

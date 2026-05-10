@@ -245,9 +245,9 @@ export default function RSUAwards() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold text-gray-100">RSU Awards</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button className="btn-secondary flex items-center gap-2" onClick={() => { setStarterForm(EMPTY_STARTER); setStarterError(null) }}>
             <Plus size={15} /> New starter award
           </button>
@@ -264,7 +264,7 @@ export default function RSUAwards() {
             <span className="text-sm font-semibold text-gray-300">{awardForm.id ? 'Edit Award' : 'Add Award'}</span>
             <button onClick={() => setAwardForm(null)} className="text-gray-400 hover:text-gray-200"><X size={16} /></button>
           </div>
-          <form onSubmit={submitAward} className="grid grid-cols-3 gap-4">
+          <form onSubmit={submitAward} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="label">Award Reference</label>
               <input className="input" value={awardForm.data.award_ref}
@@ -283,7 +283,7 @@ export default function RSUAwards() {
                 onChange={(e) => setAwardForm({ ...awardForm, data: { ...awardForm.data, notes: e.target.value } })}
                 placeholder="optional" />
             </div>
-            <div className="col-span-3 flex justify-end gap-2">
+            <div className="col-span-1 flex justify-end gap-2 sm:col-span-3">
               <button type="button" className="btn-secondary" onClick={() => setAwardForm(null)}>Cancel</button>
               <button type="submit" className="btn-primary flex items-center gap-2" disabled={createAward.isPending || updateAward.isPending}>
                 <Check size={14} /> Save
@@ -329,16 +329,17 @@ export default function RSUAwards() {
 
           {expanded.has(award.id) && (
             <div className="border-t border-surface-600">
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-max text-sm">
                 <thead>
                   <tr className="border-b border-surface-600 text-xs uppercase tracking-wide text-gray-500">
-                    <th className="px-4 py-2 text-left">Vest Date</th>
-                    <th className="px-4 py-2 text-right">Shares</th>
-                    <th className="px-4 py-2 text-left">Status</th>
-                    <th className="px-4 py-2 text-right">AMZN (USD)</th>
-                    <th className="px-4 py-2 text-right">FX Rate</th>
-                    <th className="px-4 py-2 text-right">GBP Value</th>
-                    <th className="px-4 py-2 text-right">Actions</th>
+                    <th className="px-4 py-2 text-left whitespace-nowrap">Vest Date</th>
+                    <th className="px-4 py-2 text-right whitespace-nowrap">Shares</th>
+                    <th className="px-4 py-2 text-left whitespace-nowrap">Status</th>
+                    <th className="px-4 py-2 text-right whitespace-nowrap">AMZN (USD)</th>
+                    <th className="px-4 py-2 text-right whitespace-nowrap">FX Rate</th>
+                    <th className="px-4 py-2 text-right whitespace-nowrap">GBP Value</th>
+                    <th className="px-4 py-2 text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -441,6 +442,7 @@ export default function RSUAwards() {
                   })}
                 </tbody>
               </table>
+              </div>
               <div className="px-4 py-2 border-t border-surface-600">
                 <button className="btn-secondary text-xs flex items-center gap-1"
                   onClick={() => setVestForm({ awardId: award.id, data: EMPTY_VEST })}>
@@ -454,8 +456,8 @@ export default function RSUAwards() {
 
       {/* Vest form modal */}
       {vestForm && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="card w-96">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="card w-full max-w-sm">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm font-semibold text-gray-300">{vestForm.vestId ? 'Edit Vest' : 'Add Vest'}</span>
               <button onClick={() => setVestForm(null)} className="text-gray-400 hover:text-gray-200"><X size={16} /></button>
@@ -489,14 +491,14 @@ export default function RSUAwards() {
 
       {/* New starter award helper */}
       {starterForm && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="card w-[32rem]">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="card w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm font-semibold text-gray-300">New Starter Award</span>
               <button onClick={() => setStarterForm(null)} className="text-gray-400 hover:text-gray-200"><X size={16} /></button>
             </div>
             <form onSubmit={submitStarterAward} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="label">Grant Reference</label>
                   <input className="input" value={starterForm.award_ref}
@@ -572,8 +574,8 @@ export default function RSUAwards() {
 
       {/* Reset confirmation (past vests only) */}
       {unfixConfirm && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="card w-96">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="card w-full max-w-sm">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm font-semibold text-gray-300">Reset to estimated?</span>
               <button onClick={() => setUnfixConfirm(null)} className="text-gray-400 hover:text-gray-200"><X size={16} /></button>

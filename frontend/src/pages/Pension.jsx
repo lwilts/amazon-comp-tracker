@@ -94,9 +94,9 @@ export default function Pension() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-gray-100">Pension</h1>
+        <h1 className="text-xl font-semibold text-gray-100">Salary Sacrifice</h1>
         <button className="btn-primary flex items-center gap-2" onClick={() => setShowForm(true)}>
-          <Plus size={15} /> Add pension contribution
+          <Plus size={15} /> Add salary sacrifice
         </button>
       </div>
 
@@ -104,11 +104,11 @@ export default function Pension() {
         <div className="card">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-300">
-              {editingId ? 'Edit Pension Contribution' : 'Add Pension Contribution'}
+              {editingId ? 'Edit Salary Sacrifice' : 'Add Salary Sacrifice'}
             </span>
             <button onClick={closeForm} className="text-gray-400 hover:text-gray-200"><X size={16} /></button>
           </div>
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="label">Type</label>
               <select
@@ -183,23 +183,24 @@ export default function Pension() {
       )}
 
       <div className="card p-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-max text-sm">
           <thead>
             <tr className="border-b border-surface-600 text-xs uppercase tracking-wide text-gray-500">
-              <th className="px-4 py-3 text-left">Contribution</th>
-              <th className="px-4 py-3 text-left">Type</th>
-              <th className="px-4 py-3 text-left">Effective From</th>
-              <th className="px-4 py-3 text-left">Effective To</th>
-              <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-left">Notes</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Contribution</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Type</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Effective From</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Effective To</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Status</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Notes</th>
+              <th className="px-4 py-3 text-right whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr><td colSpan={7} className="px-4 py-6 text-center text-gray-500">Loading…</td></tr>
             ) : configs.length === 0 ? (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-gray-500">No pension contributions added</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-gray-500">No salary sacrifice entries added</td></tr>
             ) : configs.map((cfg) => (
               <tr key={cfg.id} className="border-b border-surface-700 table-row-hover">
                 <td className="px-4 py-3 font-mono text-brand font-semibold">{formatAmount(cfg)}</td>
@@ -234,6 +235,7 @@ export default function Pension() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

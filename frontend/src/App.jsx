@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Menu } from 'lucide-react'
 import api from './api'
 import Login from './components/Login'
 import SetPassword from './components/SetPassword'
@@ -35,6 +36,7 @@ function AuthGuard({ children }) {
 }
 
 function Layout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const qc = useQueryClient()
 
   useEffect(() => {
@@ -52,19 +54,30 @@ function Layout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-900 text-gray-100">
-      <Sidebar />
-      <main className="flex-1 overflow-auto p-6">
-        <Routes>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="salary" element={<Salary />} />
-          <Route path="bonuses" element={<Bonuses />} />
-          <Route path="pension" element={<Pension />} />
-          <Route path="rsu" element={<RSUAwards />} />
-          <Route path="schedule" element={<PaySchedule />} />
-          <Route path="settings" element={<Settings />} />
-        </Routes>
-      </main>
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex flex-shrink-0 items-center gap-3 border-b border-surface-600 bg-surface-800 px-4 py-3 md:hidden">
+          <button onClick={() => setSidebarOpen(true)} className="text-gray-400 hover:text-gray-200">
+            <Menu size={20} />
+          </button>
+          <span className="text-base font-semibold text-brand">Amazon Comp Tracker</span>
+        </div>
+        <main className="flex-1 overflow-auto p-3 sm:p-6">
+          <Routes>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="salary" element={<Salary />} />
+            <Route path="bonuses" element={<Bonuses />} />
+            <Route path="pension" element={<Pension />} />
+            <Route path="rsu" element={<RSUAwards />} />
+            <Route path="schedule" element={<PaySchedule />} />
+            <Route path="settings" element={<Settings />} />
+          </Routes>
+        </main>
+      </div>
     </div>
   )
 }

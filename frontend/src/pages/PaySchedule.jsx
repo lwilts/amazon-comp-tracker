@@ -101,24 +101,25 @@ export default function PaySchedule() {
           return (
             <div key={tyBlock.tax_year} className="card p-0 overflow-hidden">
               {/* Tax year header */}
-              <div className="border-b border-surface-600 bg-surface-700 px-4 py-2 flex items-center justify-between">
+              <div className="border-b border-surface-600 bg-surface-700 px-4 py-2 flex flex-wrap items-center justify-between gap-y-1">
                 <span className="font-semibold text-gray-200">Tax Year {tyBlock.tax_year}</span>
-                <div className="flex gap-4 text-xs font-mono">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono">
                   <span className="text-gray-400">Total gross: {formatGBP(headerTotalGross)}</span>
                   <span className="font-semibold text-brand">Taxable gross: {formatGBP(headerTotalGross - headerPension)}</span>
                 </div>
               </div>
 
-              <table className="w-full text-xs">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-max text-xs">
                 <thead>
                   <tr className="border-b border-surface-600 text-gray-500 uppercase tracking-wide">
-                    <th className="px-3 py-2 text-left">Date</th>
-                    <th className="px-3 py-2 text-left">Type</th>
-                    <th className="px-3 py-2 text-left">Description</th>
-                    <th className="px-3 py-2 text-right">Pension (£)</th>
-                    <th className="px-3 py-2 text-right">RSU Shares</th>
-                    <th className="px-3 py-2 text-right">Total Gross (£)</th>
-                    <th className="px-3 py-2 text-right">Taxable Gross (£)</th>
+                    <th className="px-3 py-2 text-left whitespace-nowrap">Date</th>
+                    <th className="px-3 py-2 text-left whitespace-nowrap">Type</th>
+                    <th className="px-3 py-2 text-left whitespace-nowrap">Description</th>
+                    <th className="px-3 py-2 text-right whitespace-nowrap">Sal. sac. (£)</th>
+                    <th className="px-3 py-2 text-right whitespace-nowrap">RSU Shares</th>
+                    <th className="px-3 py-2 text-right whitespace-nowrap">Total Gross (£)</th>
+                    <th className="px-3 py-2 text-right whitespace-nowrap">Taxable Gross (£)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -176,6 +177,7 @@ export default function PaySchedule() {
                   </tr>
                 </tfoot>
               </table>
+              </div>
             </div>
           )
         })}

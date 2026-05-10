@@ -18,7 +18,7 @@ export default function Login() {
     setLoading(true)
     try {
       await api.post('/auth/login', { password })
-      await qc.invalidateQueries({ queryKey: ['auth-status'] })
+      qc.setQueryData(['auth-status'], (old) => ({ ...old, authenticated: true }))
       navigate('/dashboard', { replace: true })
     } catch (err) {
       if (err.response?.status === 403 && err.response?.data?.detail === 'no_password_set') {
