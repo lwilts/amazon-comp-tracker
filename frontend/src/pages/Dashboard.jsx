@@ -76,6 +76,8 @@ export default function Dashboard() {
   const totalUnvested = futureVests.reduce((s, l) => s + rsuValue(l), 0)
 
   const hasSalary = schedule?.tax_years?.some((t) => t.lines.some((l) => l.type === 'salary'))
+  const hasAnySalSac = schedule?.tax_years?.some((t) => (t.subtotals.pension || 0) > 0) ?? false
+  const hasAnyBonus = schedule?.tax_years?.some((t) => (t.subtotals.bonus || 0) > 0) ?? false
 
   const ytdLines = tyBlock?.lines.filter((l) => l.line_date <= today) || []
   const ytdSalaryGross = ytdLines.filter((l) => l.type === 'salary').reduce((s, l) => s + (l.cash_gbp || 0), 0)
@@ -229,8 +231,8 @@ export default function Dashboard() {
             <tr className="border-b border-surface-600 text-xs uppercase tracking-wide text-gray-500">
               <th className="px-3 py-2 text-left whitespace-nowrap">Tax Year</th>
               <th className="px-3 py-2 text-right whitespace-nowrap">Salary (gross)</th>
-              <th className="px-3 py-2 text-right whitespace-nowrap">Sal. sac.</th>
-              <th className="px-3 py-2 text-right whitespace-nowrap">Bonus</th>
+              {hasAnySalSac && <th className="px-3 py-2 text-right whitespace-nowrap">Sal. sac.</th>}
+              {hasAnyBonus && <th className="px-3 py-2 text-right whitespace-nowrap">Bonus</th>}
               <th className="px-3 py-2 text-right whitespace-nowrap">RSUs</th>
               <th className="px-3 py-2 text-right whitespace-nowrap">Total Gross</th>
               <th className="px-3 py-2 text-right whitespace-nowrap">Taxable Gross</th>
@@ -246,10 +248,14 @@ export default function Dashboard() {
                   )}
                 </td>
                 <td className="px-3 py-2 text-right font-mono text-gray-300">{fmt(t.subtotals.base_salary)}</td>
-                <td className="px-3 py-2 text-right font-mono text-red-400">
-                  {t.subtotals.pension > 0 ? `−${fmt(t.subtotals.pension)}` : '—'}
-                </td>
-                <td className="px-3 py-2 text-right font-mono text-gray-300">{fmt(t.subtotals.bonus)}</td>
+                {hasAnySalSac && (
+                  <td className="px-3 py-2 text-right font-mono text-red-400">
+                    {t.subtotals.pension > 0 ? `−${fmt(t.subtotals.pension)}` : '—'}
+                  </td>
+                )}
+                {hasAnyBonus && (
+                  <td className="px-3 py-2 text-right font-mono text-gray-300">{fmt(t.subtotals.bonus)}</td>
+                )}
                 <td className="px-3 py-2 text-right font-mono text-yellow-400">
                   {fmt(t.lines.filter(l => l.type === 'rsu').reduce((s, l) => s + rsuValue(l), 0))}
                 </td>

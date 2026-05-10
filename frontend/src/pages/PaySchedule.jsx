@@ -98,6 +98,7 @@ export default function PaySchedule() {
           const lines = tyBlock.lines.filter((l) => filterType === 'all' || l.type === filterType)
           const headerTotalGross = lines.reduce((s, l) => s + (l.cash_gbp ?? l.rsu_value_gbp ?? 0), 0)
           const headerPension = lines.reduce((s, l) => s + (l.pension_gbp || 0), 0)
+          const hasSalSac = tyBlock.lines.some((l) => (l.pension_gbp || 0) > 0)
           return (
             <div key={tyBlock.tax_year} className="card p-0 overflow-hidden">
               {/* Tax year header */}
@@ -116,10 +117,10 @@ export default function PaySchedule() {
                     <th className="px-3 py-2 text-left whitespace-nowrap">Date</th>
                     <th className="px-3 py-2 text-left whitespace-nowrap">Type</th>
                     <th className="px-3 py-2 text-left whitespace-nowrap">Description</th>
-                    <th className="px-3 py-2 text-right whitespace-nowrap">Sal. sac. (£)</th>
+                    {hasSalSac && <th className="px-3 py-2 text-right whitespace-nowrap">Sal. sac. (£)</th>}
                     <th className="px-3 py-2 text-right whitespace-nowrap">RSU Shares</th>
                     <th className="px-3 py-2 text-right whitespace-nowrap">Total Gross (£)</th>
-                    <th className="px-3 py-2 text-right whitespace-nowrap">Taxable Gross (£)</th>
+                    {hasSalSac && <th className="px-3 py-2 text-right whitespace-nowrap">Taxable Gross (£)</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -131,9 +132,11 @@ export default function PaySchedule() {
                         <td className="px-3 py-2 font-mono text-gray-400">{line.line_date}</td>
                         <td className="px-3 py-2"><TypeBadge type={line.type} /></td>
                         <td className="px-3 py-2 text-gray-300">{line.description}</td>
-                        <td className="px-3 py-2 font-mono text-right text-red-400">
-                          {line.pension_gbp ? `−${formatGBP(line.pension_gbp)}` : ''}
-                        </td>
+                        {hasSalSac && (
+                          <td className="px-3 py-2 font-mono text-right text-red-400">
+                            {line.pension_gbp ? `−${formatGBP(line.pension_gbp)}` : ''}
+                          </td>
+                        )}
                         <td className="px-3 py-2 font-mono text-right text-gray-400">
                           {line.rsu_shares || ''}
                         </td>
@@ -146,9 +149,11 @@ export default function PaySchedule() {
                             <span className="text-gray-300">{formatGBP(line.cash_gbp)}</span>
                           )}
                         </td>
-                        <td className="px-3 py-2 font-mono text-right font-semibold text-brand">
-                          {formatGBP(taxableGross)}
-                        </td>
+                        {hasSalSac && (
+                          <td className="px-3 py-2 font-mono text-right font-semibold text-brand">
+                            {formatGBP(taxableGross)}
+                          </td>
+                        )}
                       </tr>
                     )
                   })}
@@ -157,24 +162,26 @@ export default function PaySchedule() {
                 <tfoot>
                   <tr className="bg-surface-700 font-semibold text-xs">
                     <td className="px-3 py-2 text-gray-300" colSpan={3}>Total gross</td>
-                    <td className="px-3 py-2" />
+                    {hasSalSac && <td className="px-3 py-2" />}
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2 font-mono text-right text-gray-300">
                       {formatGBP(tyBlock.subtotals.total_inc_rsu)}
                     </td>
-                    <td className="px-3 py-2" />
+                    {hasSalSac && <td className="px-3 py-2" />}
                   </tr>
-                  <tr className="bg-surface-700 font-semibold text-xs border-t border-surface-600">
-                    <td className="px-3 py-2 text-brand" colSpan={3}>Taxable gross</td>
-                    <td className="px-3 py-2 font-mono text-right text-red-400">
-                      {tyBlock.subtotals.pension > 0 ? `−${formatGBP(tyBlock.subtotals.pension)}` : ''}
-                    </td>
-                    <td className="px-3 py-2" />
-                    <td className="px-3 py-2" />
-                    <td className="px-3 py-2 font-mono text-right text-brand">
-                      {formatGBP(tyBlock.subtotals.total_inc_rsu - tyBlock.subtotals.pension)}
-                    </td>
-                  </tr>
+                  {hasSalSac && (
+                    <tr className="bg-surface-700 font-semibold text-xs border-t border-surface-600">
+                      <td className="px-3 py-2 text-brand" colSpan={3}>Taxable gross</td>
+                      <td className="px-3 py-2 font-mono text-right text-red-400">
+                        {tyBlock.subtotals.pension > 0 ? `−${formatGBP(tyBlock.subtotals.pension)}` : ''}
+                      </td>
+                      <td className="px-3 py-2" />
+                      <td className="px-3 py-2" />
+                      <td className="px-3 py-2 font-mono text-right text-brand">
+                        {formatGBP(tyBlock.subtotals.total_inc_rsu - tyBlock.subtotals.pension)}
+                      </td>
+                    </tr>
+                  )}
                 </tfoot>
               </table>
               </div>
