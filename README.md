@@ -1,13 +1,12 @@
 # Amazon Comp Tracker
 
-A self-hosted web app for tracking Amazon compensation: base salary, bonuses, and RSU vests — with live AMZN/USD-GBP price data and a projected pay schedule.
+A self-hosted web app for tracking Amazon compensation: base salary, bonuses, RSU vests, and salary sacrifice arrangements — with live AMZN price data and a full projected pay schedule in GBP.
 
 **Features**
-- Full pay schedule grouped by UK tax year, with salary, bonus and RSU line items
-- RSU vest tracking — automatic historical price lock-in for past vests; inline value editing; Projected / Estimated / Confirmed / Speculative statuses
-- Live AMZN price and USD/GBP FX rate via yfinance, auto-refreshed on load
-- Flexible bonus configuration: monthly, quarterly, annual, or custom pay schedules
-- GBP / USD currency toggle
+- Projected pay schedule grouped by UK tax year, showing total gross and taxable gross across salary, bonus, and RSU income
+- RSU vest tracking with live and historical AMZN pricing, showing unvested value and upcoming vest dates at a glance
+- Salary sacrifice support (pension contributions or any other pre-tax deduction), correctly deducted from taxable gross throughout
+- Flexible bonus configuration: monthly, quarterly, annual, or custom pay month schedules
 - Password-protected single-user auth with first-run setup
 
 ---
@@ -86,8 +85,9 @@ Open **http://localhost:8000**.
 On first start you'll be prompted to set a password. After that, populate your data via the UI:
 
 1. **Salary** — add your salary periods with effective dates
-2. **Bonuses** — configure sign-on, performance, or any other bonuses; choose monthly, quarterly, annual, or custom schedule
-3. **RSU Awards** — add your grant(s) and vest schedule; past vests are automatically priced at the historical closing price
+2. **Salary sacrifice** — optionally add pension or other pre-tax deductions as a percentage of salary or fixed monthly amount
+3. **Bonuses** — configure sign-on, performance, or any other bonuses; choose monthly, quarterly, annual, or custom schedule
+4. **RSU Awards** — add your grant(s) and vest schedule; past vests are automatically priced at the historical closing price
 
 ---
 
@@ -137,7 +137,7 @@ acurl -X PUT http://localhost:8000/api/salary/1 \
 acurl -X DELETE http://localhost:8000/api/salary/1
 ```
 
-### Pension
+### Salary sacrifice
 
 ```bash
 # List
