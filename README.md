@@ -1,6 +1,8 @@
 # Amazon Comp Tracker
 
-A self-hosted web app for tracking Amazon compensation: base salary, bonuses, RSU vests, and salary sacrifice arrangements — with live AMZN price data and a full projected pay schedule in GBP.
+A self-hosted web app for tracking Amazon compensation: base salary, bonuses, and RSU vests (using current and historic AMZN price data). 
+
+Add salary sacrifice arrangements (such as pension contributions) to get a yearly breakdown of past and predicted taxable compensation.
 
 **Features**
 - Projected pay schedule grouped by UK tax year, showing total gross and taxable gross across salary, bonus, and RSU income
